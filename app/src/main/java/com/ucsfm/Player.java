@@ -3,6 +3,9 @@ package com.ucsfm;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
+
 import java.io.IOException;
 
 public class Player {
@@ -17,13 +20,21 @@ public class Player {
 
     MediaPlayer mediaPlayer;
     boolean isPlaying = false;
-    int selectedRadio = 0;
+    private boolean selecionadoPeloUsuario = false;
+    MutableLiveData<Integer> selectedRadio;
 
     private Player() {
+        selectedRadio = new MutableLiveData<>();
+        selectedRadio.setValue(0);
+
         mediaPlayer = new MediaPlayer();
         mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-
-        setRadio(BENTO);
+        try {
+            mediaPlayer.setDataSource(STREAM_CAXIAS);
+            mediaPlayer.prepare();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public void setRadio(int radio) {
@@ -31,15 +42,15 @@ public class Player {
         switch (radio) {
             case BENTO:
                 stream = STREAM_BENTO;
-                selectedRadio = BENTO;
+                selectedRadio.setValue(BENTO);
                 break;
             case VACARIA:
                 stream = STREAM_VACARIA;
-                selectedRadio = VACARIA;
+                selectedRadio.setValue(VACARIA);
                 break;
             default:
                 stream = STREAM_CAXIAS;
-                selectedRadio = CAXIAS;
+                selectedRadio.setValue(CAXIAS);
                 break;
         }
 
@@ -78,6 +89,14 @@ public class Player {
         }
     }
 
+    public boolean getSelecionadoPeloUsuario() {
+        return selecionadoPeloUsuario;
+    }
+
+    public void setSelecionadoPeloUsuario(boolean valor) {
+        selecionadoPeloUsuario = valor;
+    }
+
     public Boolean getIsPlaying() {
         return isPlaying;
     }
@@ -87,6 +106,10 @@ public class Player {
     }
 
     public int getSelectedRadio() {
+        return selectedRadio.getValue();
+    }
+
+    public LiveData<Integer> getSelectedRadioLive() {
         return selectedRadio;
     }
 

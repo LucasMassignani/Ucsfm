@@ -10,6 +10,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.LiveData;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
@@ -30,16 +31,18 @@ public class HomeFragment extends Fragment {
                 new ViewModelProvider(this).get(HomeViewModel.class);
         View root = inflater.inflate(R.layout.fragment_home, container, false);
 
+
         btnRadioCaxias = (LinearLayout) root.findViewById(R.id.radio_caxias);
 
         btnRadioCaxias.setOnClickListener( new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Player player = Player.getInstance();
+                player.setSelecionadoPeloUsuario(true);
                 root.findViewById(R.id.radio_bento).setBackgroundResource(R.drawable.shape_radio);
                 root.findViewById(R.id.radio_vacaria).setBackgroundResource(R.drawable.shape_radio);
                 v.setBackgroundResource(R.drawable.shape_radio_selecionada);
 
-                Player player = Player.getInstance();
                 player.setRadio(Player.CAXIAS);
                 TextView textView = MainActivity.getTextRadio();
                 textView.setText("106.5 - Caxias do Sul");
@@ -50,10 +53,11 @@ public class HomeFragment extends Fragment {
         btnRadioBento.setOnClickListener( new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Player player = Player.getInstance();
+                player.setSelecionadoPeloUsuario(true);
                 root.findViewById(R.id.radio_caxias).setBackgroundResource(R.drawable.shape_radio);
                 root.findViewById(R.id.radio_vacaria).setBackgroundResource(R.drawable.shape_radio);
                 v.setBackgroundResource(R.drawable.shape_radio_selecionada);
-                Player player = Player.getInstance();
                 player.setRadio(Player.BENTO);
                 TextView textView = MainActivity.getTextRadio();
                 textView.setText("89.9 - Bento Gonçalves");
@@ -64,10 +68,11 @@ public class HomeFragment extends Fragment {
         btnRadioVacaria.setOnClickListener( new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Player player = Player.getInstance();
+                player.setSelecionadoPeloUsuario(true);
                 root.findViewById(R.id.radio_bento).setBackgroundResource(R.drawable.shape_radio);
                 root.findViewById(R.id.radio_caxias).setBackgroundResource(R.drawable.shape_radio);
                 v.setBackgroundResource(R.drawable.shape_radio_selecionada);
-                Player player = Player.getInstance();
                 player.setRadio(Player.VACARIA);
                 TextView textView = MainActivity.getTextRadio();
                 textView.setText("106.1 - Vacaria");
@@ -82,17 +87,34 @@ public class HomeFragment extends Fragment {
         super.onResume();
 
         Player player = Player.getInstance();
-        int selectedRadio = player.getSelectedRadio();
-        switch (selectedRadio) {
-            case 1:
-                btnRadioBento.setBackgroundResource(R.drawable.shape_radio_selecionada);
-                break;
-            case 2:
-                btnRadioVacaria.setBackgroundResource(R.drawable.shape_radio_selecionada);
-                break;
-            default:
-                btnRadioCaxias.setBackgroundResource(R.drawable.shape_radio_selecionada);
-                break;
-        }
+
+        player.getSelectedRadioLive().observe(getViewLifecycleOwner(), new Observer<Integer>() {
+            @Override
+            public void onChanged(@Nullable Integer value) {
+                TextView textView = MainActivity.getTextRadio();
+                switch (value) {
+                    case Player.BENTO:
+                        btnRadioBento.setBackgroundResource(R.drawable.shape_radio_selecionada);
+                        btnRadioVacaria.setBackgroundResource(R.drawable.shape_radio);
+                        btnRadioCaxias.setBackgroundResource(R.drawable.shape_radio);
+                        textView.setText("89.9 - Bento Gonçalves");
+                        break;
+                    case Player.VACARIA:
+                        btnRadioBento.setBackgroundResource(R.drawable.shape_radio);
+                        btnRadioVacaria.setBackgroundResource(R.drawable.shape_radio_selecionada);
+                        btnRadioCaxias.setBackgroundResource(R.drawable.shape_radio);
+                        textView.setText("106.1 - Vacaria");
+                        break;
+                    default:
+                        btnRadioBento.setBackgroundResource(R.drawable.shape_radio);
+                        btnRadioVacaria.setBackgroundResource(R.drawable.shape_radio);
+                        btnRadioCaxias.setBackgroundResource(R.drawable.shape_radio_selecionada);
+                        textView.setText("106.5 - Caxias do Sul");
+                        break;
+                }
+            }
+        });
     }
+
+
 }
