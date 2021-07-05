@@ -12,14 +12,8 @@
         tools:layout="@layout/fragment_home" />
 
     <fragment
-        android:id="@+id/nav_gallery"
-        android:name="com.ucsfm.ui.gallery.GalleryFragment"
+        android:id="@+id/nav_perfil"
+        android:name="com.ucsfm.ui.perfil.PerfilFragment"
         android:label=" "
-        tools:layout="@layout/fragment_gallery" />
-
-    <fragment
-        android:id="@+id/nav_slideshow"
-        android:name="com.ucsfm.ui.slideshow.SlideshowFragment"
-        android:label=" "
-        tools:layout="@layout/fragment_slideshow" />
+        tools:layout="@layout/perfil_fragment" />
 </navigation>

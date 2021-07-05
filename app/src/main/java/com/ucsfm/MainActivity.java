@@ -2,23 +2,27 @@ package com.ucsfm;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
+import android.graphics.Bitmap;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.media.AudioManager;
 import android.media.MediaPlayer;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.google.android.material.navigation.NavigationView;
+import com.ucsfm.database.model.User;
 
+import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.Observer;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
@@ -26,8 +30,6 @@ import androidx.navigation.ui.NavigationUI;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-
-import org.w3c.dom.Text;
 
 import java.io.IOException;
 import java.util.List;
@@ -37,6 +39,7 @@ public class MainActivity extends AppCompatActivity {
     private AppBarConfiguration mAppBarConfiguration;
     private static ImageButton btnPlayStop;
     private static TextView textRadio;
+    private static MutableLiveData<User> loggedUser = new MutableLiveData<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,7 +53,7 @@ public class MainActivity extends AppCompatActivity {
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
         mAppBarConfiguration = new AppBarConfiguration.Builder(
-                R.id.nav_home, R.id.nav_gallery, R.id.nav_slideshow)
+                R.id.nav_home, R.id.nav_perfil)
                 .setDrawerLayout(drawer)
                 .build();
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
@@ -59,6 +62,30 @@ public class MainActivity extends AppCompatActivity {
 
         btnPlayStop = findViewById(R.id.playStop);
         textRadio = findViewById(R.id.radio_tocando);
+
+        loggedUser.setValue(new User("Teste", "Teste@teste.com", null));
+
+        NavigationView nv = findViewById(R.id.nav_view);
+        View headerLayout = nv.getHeaderView(0);
+
+        loggedUser.observe(this, new Observer<User>() {
+            @Override
+            public void onChanged(@Nullable User user) {
+
+                TextView userName = headerLayout.findViewById(R.id.user_name);
+                TextView userEmail = headerLayout.findViewById(R.id.user_email);
+                ImageView userPicture = headerLayout.findViewById(R.id.user_picture);
+
+                userName.setText(user.getName());
+                userEmail.setText(user.getEmail());
+                Bitmap picture = user.getProfilePicture();
+                if(picture!=null) {
+                    userPicture.setImageBitmap(picture);
+                } else {
+                    userPicture.setImageResource(R.drawable.user_default);
+                }
+            }
+        });
     }
 
     @Override
@@ -118,6 +145,18 @@ public class MainActivity extends AppCompatActivity {
 
 
     private void pedirPermissoes() {
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.READ_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                    Manifest.permission.READ_EXTERNAL_STORAGE)) {
+            } else {
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                        3);
+            }
+        }
+
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
                 ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                     ActivityCompat.requestPermissions(this, new String[]
@@ -167,5 +206,9 @@ public class MainActivity extends AppCompatActivity {
         }catch(SecurityException ex){
             ex.printStackTrace();
         }
+    }
+
+    public static MutableLiveData<User> getLoggedUser() {
+        return loggedUser;
     }
 }
